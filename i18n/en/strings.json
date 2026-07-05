@@ -1,0 +1,48 @@
+{
+  "app": {
+    "title": "Group Pay",
+    "subtitle": "Split the bill. No math at the table.",
+    "howToUse": "How to Use"
+  },
+  "steps": {
+    "bill": {
+      "title": "> BILL_TOTAL",
+      "hint": "Enter the full amount on the receipt.",
+      "placeholder": "0.00",
+      "confirm": "CONFIRM"
+    },
+    "names": {
+      "title": "> PAYERS",
+      "hint": "Names separated by commas.",
+      "placeholder": "Alex, Carlos, Cesar, Manuel",
+      "confirm": "START SPLIT"
+    },
+    "items": {
+      "title": "> ORDER_LOG",
+      "hint": "item name | price — one per line",
+      "placeholder": "lemonade | 45\ncocktail | 130",
+      "addItem": "ADD ITEM",
+      "splitWith": "Split with",
+      "nextPerson": "NEXT PERSON",
+      "finish": "VIEW RESULTS"
+    },
+    "summary": {
+      "title": "> RECONCILE",
+      "balanced": "Totals match the bill.",
+      "unbalanced": "Difference detected — review items.",
+      "restart": "NEW BILL",
+      "export": "EXPORT",
+      "import": "IMPORT"
+    }
+  },
+  "labels": {
+    "billTotal": "BILL",
+    "yourShare": "share",
+    "split": "split",
+    "splitWith": "Split with",
+    "autoSplit": "auto-split",
+    "assigned": "Assigned",
+    "remaining": "Remaining",
+    "eachOwes": "Each person owes"
+  }
+}
