@@ -2,7 +2,15 @@
   "app": {
     "title": "Group Pay",
     "subtitle": "Split the bill. No math at the table.",
-    "howToUse": "How to Use"
+    "howToUse": "How to Use",
+    "logoBefore": "Group Pay by",
+    "logoAuthor": "AlexRabbit",
+    "logoUrl": "https://github.com/AlexRabbit/Group-Pay-Split-Bill"
+  },
+  "lang": {
+    "label": "Language",
+    "en": "English",
+    "es": "Español"
   },
   "steps": {
     "bill": {
@@ -19,10 +27,10 @@
     },
     "items": {
       "title": "> ORDER_LOG",
-      "hint": "item name | price — one per line",
-      "placeholder": "lemonade | 45\ncocktail | 130",
+      "hint": "Add what this person ordered.",
+      "itemNamePlaceholder": "item name",
+      "itemPricePlaceholder": "0.00",
       "addItem": "ADD ITEM",
-      "splitWith": "Split with",
       "nextPerson": "NEXT PERSON",
       "finish": "VIEW RESULTS"
     },
@@ -31,18 +39,90 @@
       "balanced": "Totals match the bill.",
       "unbalanced": "Difference detected — review items.",
       "restart": "NEW BILL",
+      "copyLink": "Copy Link",
+      "createPdf": "Create a PDF",
       "export": "EXPORT",
-      "import": "IMPORT"
+      "import": "IMPORT",
+      "backupHint": "Backup / restore session"
     }
   },
   "labels": {
     "billTotal": "BILL",
-    "yourShare": "share",
     "split": "split",
     "splitWith": "Split with",
     "autoSplit": "auto-split",
     "assigned": "Assigned",
-    "remaining": "Remaining",
-    "eachOwes": "Each person owes"
+    "eachOwes": "Each person owes",
+    "unassigned": "unassigned",
+    "overAssigned": "over-assigned",
+    "back": "BACK",
+    "remove": "Remove"
+  },
+  "errors": {
+    "itemName": "Enter an item name",
+    "itemPrice": "Enter a valid price",
+    "billTotal": "Enter a valid bill total",
+    "names": "Add at least one name",
+    "copyLink": "Could not copy link",
+    "pdfFailed": "Could not create PDF"
+  },
+  "toasts": {
+    "linkCopied": "Link copied — bookmark to save session"
+  },
+  "pdf": {
+    "title": "GROUP PAY — BILL SPLIT",
+    "generated": "Generated",
+    "billTotal": "BILL TOTAL",
+    "payerSection": "PAYER",
+    "subtotal": "Subtotal",
+    "reconcile": "RECONCILE",
+    "assigned": "Assigned",
+    "difference": "Difference",
+    "balanced": "BALANCED",
+    "unbalanced": "UNBALANCED",
+    "footer": "group-pay-split-bill · no napkin math"
+  },
+  "tour": {
+    "next": "NEXT →",
+    "prev": "← BACK",
+    "done": "DONE",
+    "steps": [
+      {
+        "title": "① Bill total",
+        "description": "Type the full receipt amount. This stays pinned at the top."
+      },
+      {
+        "title": "② Confirm",
+        "description": "Lock in the total and move to the next step."
+      },
+      {
+        "title": "③ Who ate?",
+        "description": "Comma-separated names. Everyone who shares the bill."
+      },
+      {
+        "title": "④ One person at a time",
+        "description": "Each payer logs their items. Running total shows on the right."
+      },
+      {
+        "title": "⑤ Add items",
+        "description": "Name + price. Tap ADD or press Enter on the price field."
+      },
+      {
+        "title": "⑥ Split shared food",
+        "description": "Check who shares an item. Enter the FULL price — we split it automatically."
+      },
+      {
+        "title": "⑦ Reconcile",
+        "description": "At the end, assigned totals must match the bill. Green = good. Amber = fix items."
+      },
+      {
+        "title": "⑧ Copy link",
+        "description": "Copy the session URL — bookmark it to restore everything later."
+      },
+      {
+        "title": "⑨ PDF & backup",
+        "description": "Create a formatted PDF or export JSON to share with friends."
+      }
+    ]
   }
 }

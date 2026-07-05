@@ -1,0 +1,128 @@
+{
+  "app": {
+    "title": "Group Pay",
+    "subtitle": "Divide la cuenta. Sin matemáticas en la mesa.",
+    "howToUse": "Cómo usar",
+    "logoBefore": "Group Pay por",
+    "logoAuthor": "AlexRabbit",
+    "logoUrl": "https://github.com/AlexRabbit/Group-Pay-Split-Bill"
+  },
+  "lang": {
+    "label": "Idioma",
+    "en": "English",
+    "es": "Español"
+  },
+  "steps": {
+    "bill": {
+      "title": "> TOTAL_CUENTA",
+      "hint": "Ingresa el monto total del recibo.",
+      "placeholder": "0.00",
+      "confirm": "CONFIRMAR"
+    },
+    "names": {
+      "title": "> COMENSALES",
+      "hint": "Nombres separados por comas.",
+      "placeholder": "Alex, Carlos, César, Manuel",
+      "confirm": "INICIAR DIVISIÓN"
+    },
+    "items": {
+      "title": "> REGISTRO_PEDIDO",
+      "hint": "Agrega lo que pidió esta persona.",
+      "itemNamePlaceholder": "nombre del platillo",
+      "itemPricePlaceholder": "0.00",
+      "addItem": "AGREGAR",
+      "nextPerson": "SIGUIENTE",
+      "finish": "VER RESULTADOS"
+    },
+    "summary": {
+      "title": "> CONCILIAR",
+      "balanced": "Los totales coinciden con la cuenta.",
+      "unbalanced": "Hay diferencia — revisa los artículos.",
+      "restart": "NUEVA CUENTA",
+      "copyLink": "Copiar enlace",
+      "createPdf": "Crear PDF",
+      "export": "EXPORTAR",
+      "import": "IMPORTAR",
+      "backupHint": "Respaldo / restaurar sesión"
+    }
+  },
+  "labels": {
+    "billTotal": "CUENTA",
+    "split": "dividido",
+    "splitWith": "Dividir con",
+    "autoSplit": "auto-dividido",
+    "assigned": "Asignado",
+    "eachOwes": "Cada persona debe",
+    "unassigned": "sin asignar",
+    "overAssigned": "sobre-asignado",
+    "back": "ATRÁS",
+    "remove": "Eliminar"
+  },
+  "errors": {
+    "itemName": "Ingresa el nombre del artículo",
+    "itemPrice": "Ingresa un precio válido",
+    "billTotal": "Ingresa un total de cuenta válido",
+    "names": "Agrega al menos un nombre",
+    "copyLink": "No se pudo copiar el enlace",
+    "pdfFailed": "No se pudo crear el PDF"
+  },
+  "toasts": {
+    "linkCopied": "Enlace copiado — guárdalo en favoritos"
+  },
+  "pdf": {
+    "title": "GROUP PAY — DIVISIÓN DE CUENTA",
+    "generated": "Generado",
+    "billTotal": "TOTAL CUENTA",
+    "payerSection": "COMENSAL",
+    "subtotal": "Subtotal",
+    "reconcile": "CONCILIAR",
+    "assigned": "Asignado",
+    "difference": "Diferencia",
+    "balanced": "CUADRADO",
+    "unbalanced": "DESCUADRADO",
+    "footer": "group-pay-split-bill · sin matemáticas en servilleta"
+  },
+  "tour": {
+    "next": "SIGUIENTE →",
+    "prev": "← ATRÁS",
+    "done": "LISTO",
+    "steps": [
+      {
+        "title": "① Total de la cuenta",
+        "description": "Escribe el monto total del recibo. Se queda fijo arriba."
+      },
+      {
+        "title": "② Confirmar",
+        "description": "Confirma el total y pasa al siguiente paso."
+      },
+      {
+        "title": "③ ¿Quién comió?",
+        "description": "Nombres separados por comas. Todos los que comparten la cuenta."
+      },
+      {
+        "title": "④ Uno por uno",
+        "description": "Cada persona registra sus platillos. El total aparece a la derecha."
+      },
+      {
+        "title": "⑤ Agregar artículos",
+        "description": "Nombre + precio. Toca AGREGAR o Enter en el precio."
+      },
+      {
+        "title": "⑥ Dividir comida",
+        "description": "Marca con quién compartes. Ingresa el precio COMPLETO — lo dividimos automáticamente."
+      },
+      {
+        "title": "⑦ Conciliar",
+        "description": "Al final, la suma debe igualar la cuenta. Verde = bien. Ámbar = revisar."
+      },
+      {
+        "title": "⑧ Copiar enlace",
+        "description": "Copia la URL de la sesión — guárdala en favoritos para restaurar todo."
+      },
+      {
+        "title": "⑨ PDF y respaldo",
+        "description": "Crea un PDF formateado o exporta JSON para compartir."
+      }
+    ]
+  }
+}

@@ -13,17 +13,21 @@
   <div class="crt-glow" aria-hidden="true"></div>
 
   <div class="app-shell">
-    <header class="top-bar hidden" id="topBar">
-      <span class="logo">GROUP_PAY v1</span>
-      <span class="bill-pill" id="billPill">$0.00</span>
+    <header class="top-bar" id="topBar">
+      <div class="logo-wrap">
+        <span class="logo" id="logoText"></span>
+      </div>
+      <span class="bill-pill hidden" id="billPill">$0.00</span>
       <div class="top-actions">
+        <select class="lang-select" id="langSelect" aria-label="Language">
+          <option value="en">EN</option>
+          <option value="es">ES</option>
+        </select>
         <button type="button" class="btn-icon btn-howto" id="btnHowTo" aria-label="How to use">?</button>
-        <button type="button" class="btn-icon" id="btnShare" aria-label="Copy share link" title="Copy link">⎘</button>
       </div>
     </header>
 
     <main class="main-stage" id="mainStage">
-      <!-- Step 0: Bill total -->
       <section class="step-panel active" id="stepBill" data-step="bill">
         <h1 class="step-title" id="titleBill">&gt; BILL_TOTAL</h1>
         <p class="step-hint" id="hintBill">Enter the full amount on the receipt.</p>
@@ -32,7 +36,6 @@
         </div>
       </section>
 
-      <!-- Step 1: Names -->
       <section class="step-panel" id="stepNames" data-step="names">
         <h2 class="step-title" id="titleNames">&gt; PAYERS</h2>
         <p class="step-hint" id="hintNames">Names separated by commas.</p>
@@ -41,7 +44,6 @@
         </div>
       </section>
 
-      <!-- Step 2: Per-payer items -->
       <section class="step-panel" id="stepItems" data-step="items">
         <div class="progress-dots" id="progressDots" aria-hidden="true"></div>
         <div class="payer-header">
@@ -62,7 +64,6 @@
         </div>
       </section>
 
-      <!-- Step 3: Summary -->
       <section class="step-panel" id="stepSummary" data-step="summary">
         <h2 class="step-title" id="titleSummary">&gt; RECONCILE</h2>
         <div class="reconcile" id="reconcileBox"></div>
@@ -70,9 +71,11 @@
           <h3 id="labelEachOwes">Each person owes</h3>
           <div id="summaryRows"></div>
         </div>
-        <div class="terminal-box" style="margin-top:12px">
-          <p class="step-hint" style="margin-bottom:8px">Backup / restore session</p>
-          <div class="action-bar-inner" style="position:static;padding:0;border:none;background:none">
+        <div class="terminal-box summary-tools" style="margin-top:12px">
+          <p class="step-hint" id="hintBackup" style="margin-bottom:8px">Backup / restore session</p>
+          <div class="summary-actions">
+            <button type="button" class="btn-secondary" id="btnCopyLink">Copy Link</button>
+            <button type="button" class="btn-secondary" id="btnCreatePdf">Create a PDF</button>
             <button type="button" class="btn-secondary" id="btnExport">EXPORT</button>
             <button type="button" class="btn-secondary" id="btnImport">IMPORT</button>
           </div>
@@ -94,8 +97,10 @@
 
   <script src="js/split-engine.js"></script>
   <script src="js/logger.js"></script>
+  <script src="js/pdf.js"></script>
   <script src="js/app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="js/tour.js"></script>
 </body>
 </html>

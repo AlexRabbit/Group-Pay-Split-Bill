@@ -7,11 +7,13 @@
   const SE = SplitEngine;
   const STEPS = ['bill', 'names', 'items', 'summary'];
   const FIRST_VISIT_KEY = 'gps_tour_seen';
+  const LANG_KEY = 'gps_lang';
 
   let state = SE.emptyState();
   let uiStep = 0;
   let payerIndex = 0;
   let strings = {};
+  let currentLang = 'en';
 
   const $ = (id) => document.getElementById(id);
 
@@ -49,6 +51,16 @@
     showInfo._t = setTimeout(() => el.classList.add('hidden'), 3000);
   }
 
+  function t(path, fallback) {
+    const parts = path.split('.');
+    let o = strings;
+    for (const p of parts) {
+      if (!o || o[p] === undefined) return fallback !== undefined ? fallback : path;
+      o = o[p];
+    }
+    return o;
+  }
+
   function setUiStep(step) {
     uiStep = step;
     STEPS.forEach((name, i) => {
@@ -56,8 +68,7 @@
       if (panel) panel.classList.toggle('active', i === step);
     });
 
-    const topBar = $('topBar');
-    topBar.classList.toggle('hidden', step === 0);
+    $('billPill').classList.toggle('hidden', step === 0 || !state.billTotalCents);
 
     const btnBack = $('btnBack');
     btnBack.classList.toggle('hidden', step === 0 || step === 3);
@@ -70,14 +81,16 @@
   function updateActionButton() {
     const btn = $('btnAction');
     const labels = strings.steps || {};
-    if (uiStep === 0) btn.textContent = (labels.bill && labels.bill.confirm) || 'CONFIRM';
-    else if (uiStep === 1) btn.textContent = (labels.names && labels.names.confirm) || 'START SPLIT';
+    if (uiStep === 0) btn.textContent = t('steps.bill.confirm', 'CONFIRM');
+    else if (uiStep === 1) btn.textContent = t('steps.names.confirm', 'START SPLIT');
     else if (uiStep === 2) {
       const isLast = payerIndex >= state.payers.length - 1;
       btn.textContent = isLast
-        ? ((labels.items && labels.items.finish) || 'VIEW RESULTS')
-        : ((labels.items && labels.items.nextPerson) || 'NEXT PERSON');
-    } else btn.textContent = (labels.summary && labels.summary.restart) || 'NEW BILL';
+        ? t('steps.items.finish', 'VIEW RESULTS')
+        : t('steps.items.nextPerson', 'NEXT PERSON');
+    } else btn.textContent = t('steps.summary.restart', 'NEW BILL');
+
+    $('btnBack').textContent = t('labels.back', 'BACK');
   }
 
   function updateBillPill() {
@@ -105,7 +118,7 @@
       return;
     }
 
-    const label = (strings.labels && strings.labels.splitWith) || 'Split with';
+    const label = t('labels.splitWith', 'Split with');
     let html = '<span>' + label + ':</span>';
     state.payers.forEach((p, i) => {
       if (i === payerIndex) return;
@@ -139,15 +152,15 @@
         const auto = item.autoAdded ? ' auto-split' : '';
         const badge = item.isSplit
           ? '<span class="item-badge">' +
-            (item.autoAdded
-              ? (strings.labels && strings.labels.autoSplit) || 'auto-split'
-              : (strings.labels && strings.labels.split) || 'split') +
+            (item.autoAdded ? t('labels.autoSplit', 'auto-split') : t('labels.split', 'split')) +
             '</span>'
           : '';
         const removeBtn = item.editable !== false
           ? '<button type="button" class="btn-remove" data-id="' +
             item.id +
-            '" aria-label="Remove">×</button>'
+            '" aria-label="' +
+            escapeHtml(t('labels.remove', 'Remove')) +
+            '">×</button>'
           : '';
         return (
           '<li class="' +
@@ -188,19 +201,21 @@
 
   function renderSummary() {
     const totals = SE.computeTotals(state);
-    const labels = strings.steps && strings.steps.summary;
     const box = $('reconcileBox');
 
     if (totals.balanced) {
       box.className = 'reconcile ok';
-      box.innerHTML = '✓ ' + ((labels && labels.balanced) || 'Totals match the bill.');
+      box.innerHTML = '✓ ' + t('steps.summary.balanced', 'Totals match the bill.');
     } else {
       box.className = 'reconcile warn';
       const diff = formatMoney(Math.abs(totals.diffCents));
-      const sign = totals.diffCents > 0 ? 'unassigned' : 'over-assigned';
+      const sign =
+        totals.diffCents > 0
+          ? t('labels.unassigned', 'unassigned')
+          : t('labels.overAssigned', 'over-assigned');
       box.innerHTML =
         '⚠ ' +
-        ((labels && labels.unbalanced) || 'Difference detected.') +
+        t('steps.summary.unbalanced', 'Difference detected.') +
         '<div class="diff">' +
         diff +
         ' ' +
@@ -208,7 +223,7 @@
         '</div>';
     }
 
-    $('labelEachOwes').textContent = (strings.labels && strings.labels.eachOwes) || 'Each person owes';
+    $('labelEachOwes').textContent = t('labels.eachOwes', 'Each person owes');
     $('summaryRows').innerHTML = totals.perPayer
       .map(
         (p) =>
@@ -220,8 +235,8 @@
       )
       .join('');
 
-    const assignedLabel = (strings.labels && strings.labels.assigned) || 'Assigned';
-    const billLabel = (strings.labels && strings.labels.billTotal) || 'Bill';
+    const assignedLabel = t('labels.assigned', 'Assigned');
+    const billLabel = t('labels.billTotal', 'BILL');
     $('summaryRows').innerHTML +=
       '<div class="summary-row" style="margin-top:8px;border-top:1px dashed var(--green-border)">' +
       '<span>' +
@@ -251,11 +266,11 @@
     const partners = getSelectedSplitPartners();
 
     if (!name) {
-      showError('Enter an item name');
+      showError(t('errors.itemName', 'Enter an item name'));
       return false;
     }
     if (!price || SE.toCents(price) <= 0) {
-      showError('Enter a valid price');
+      showError(t('errors.itemPrice', 'Enter a valid price'));
       return false;
     }
 
@@ -278,7 +293,7 @@
     const val = $('inputBill').value;
     const cents = SE.toCents(val);
     if (!Number.isFinite(cents) || cents <= 0) {
-      showError('Enter a valid bill total');
+      showError(t('errors.billTotal', 'Enter a valid bill total'));
       return;
     }
     state.billTotalCents = cents;
@@ -290,7 +305,7 @@
   function confirmNames() {
     const names = SE.parseNames($('inputNames').value);
     if (names.length < 1) {
-      showError('Add at least one name');
+      showError(t('errors.names', 'Add at least one name'));
       return;
     }
     state.payers = SE.initPayers(names);
@@ -373,8 +388,19 @@
     syncUrl();
     navigator.clipboard
       .writeText(location.href)
-      .then(() => showInfo('Link copied — bookmark to save session'))
-      .catch(() => showError('Could not copy link'));
+      .then(() => showInfo(t('toasts.linkCopied', 'Link copied')))
+      .catch(() => showError(t('errors.copyLink', 'Could not copy link')));
+  }
+
+  function createPdf() {
+    try {
+      if (typeof GPSPdf === 'undefined') throw new Error('PDF module missing');
+      GPSPdf.generate(state, strings, SE);
+      GPSLogger.info('pdf', 'generated');
+    } catch (e) {
+      showError(t('errors.pdfFailed', 'Could not create PDF'));
+      GPSLogger.error('pdf', e.message);
+    }
   }
 
   function exportBackup() {
@@ -405,40 +431,81 @@
     reader.readAsText(file);
   }
 
-  async function loadStrings() {
+  async function loadStrings(lang) {
+    const code = lang === 'es' ? 'es' : 'en';
+    currentLang = code;
     try {
-      const res = await fetch(assetUrl('i18n/en/strings.json'));
+      const res = await fetch(assetUrl('i18n/' + code + '/strings.json'));
       if (res.ok) strings = await res.json();
+      else strings = {};
     } catch (_) {
       strings = {};
     }
+    document.documentElement.lang = code;
+    localStorage.setItem(LANG_KEY, code);
     applyStrings();
+    if (typeof GPSTour !== 'undefined') GPSTour.setStrings(strings);
+  }
+
+  async function setLanguage(lang) {
+    await loadStrings(lang);
+    $('langSelect').value = currentLang;
+    updateActionButton();
+    if (uiStep === 2) renderPayerStep();
+    if (uiStep === 3) renderSummary();
   }
 
   function applyStrings() {
     const s = strings;
-    if (s.app) document.title = s.app.title + ' — Split Bill';
+    if (s.app) {
+      document.title = s.app.title + ' — Split Bill';
+      const url = s.app.logoUrl || 'https://github.com/AlexRabbit/Group-Pay-Split-Bill';
+      const author = s.app.logoAuthor || 'AlexRabbit';
+      const before = s.app.logoBefore || 'Group Pay by';
+      $('logoText').innerHTML =
+        escapeHtml(before) +
+        ' <a href="' +
+        escapeHtml(url) +
+        '" target="_blank" rel="noopener noreferrer">' +
+        escapeHtml(author) +
+        '</a>';
+    }
     if (s.steps) {
       if (s.steps.bill) {
         $('titleBill').textContent = s.steps.bill.title || $('titleBill').textContent;
         $('hintBill').textContent = s.steps.bill.hint || $('hintBill').textContent;
+        if (s.steps.bill.placeholder) $('inputBill').placeholder = s.steps.bill.placeholder;
       }
       if (s.steps.names) {
         $('titleNames').textContent = s.steps.names.title || $('titleNames').textContent;
         $('hintNames').textContent = s.steps.names.hint || $('hintNames').textContent;
+        if (s.steps.names.placeholder) $('inputNames').placeholder = s.steps.names.placeholder;
       }
       if (s.steps.items) {
         $('hintItems').textContent = s.steps.items.hint || $('hintItems').textContent;
-        const addBtn = $('btnAddItem');
-        if (addBtn && s.steps.items.addItem) addBtn.textContent = s.steps.items.addItem;
+        if (s.steps.items.itemNamePlaceholder)
+          $('inputItemName').placeholder = s.steps.items.itemNamePlaceholder;
+        if (s.steps.items.itemPricePlaceholder)
+          $('inputItemPrice').placeholder = s.steps.items.itemPricePlaceholder;
+        if (s.steps.items.addItem) $('btnAddItem').textContent = s.steps.items.addItem;
       }
       if (s.steps.summary) {
         $('titleSummary').textContent = s.steps.summary.title || $('titleSummary').textContent;
+        if (s.steps.summary.backupHint) $('hintBackup').textContent = s.steps.summary.backupHint;
+        if (s.steps.summary.copyLink) $('btnCopyLink').textContent = s.steps.summary.copyLink;
+        if (s.steps.summary.createPdf) $('btnCreatePdf').textContent = s.steps.summary.createPdf;
+        if (s.steps.summary.export) $('btnExport').textContent = s.steps.summary.export;
+        if (s.steps.summary.import) $('btnImport').textContent = s.steps.summary.import;
       }
     }
     if (s.app && s.app.howToUse) {
-      $('btnHowTo').textContent = s.app.howToUse.length <= 3 ? '?' : s.app.howToUse;
-      $('btnHowTo').setAttribute('aria-label', s.app.howToUse);
+      const ht = s.app.howToUse;
+      $('btnHowTo').textContent = ht.length <= 8 ? (ht.length <= 3 ? '?' : ht.slice(0, 3)) : '?';
+      $('btnHowTo').setAttribute('aria-label', ht);
+      $('btnHowTo').setAttribute('title', ht);
+    }
+    if (s.lang) {
+      $('langSelect').setAttribute('aria-label', s.lang.label || 'Language');
     }
   }
 
@@ -459,9 +526,11 @@
     $('btnAction').addEventListener('click', handleAction);
     $('btnBack').addEventListener('click', handleBack);
     $('btnAddItem').addEventListener('click', addCurrentItem);
-    $('btnShare').addEventListener('click', copyShareLink);
+    $('btnCopyLink').addEventListener('click', copyShareLink);
+    $('btnCreatePdf').addEventListener('click', createPdf);
     $('btnExport').addEventListener('click', exportBackup);
     $('btnImport').addEventListener('click', () => $('inputImport').click());
+    $('langSelect').addEventListener('change', (e) => setLanguage(e.target.value));
     $('inputImport').addEventListener('change', (e) => {
       const f = e.target.files[0];
       if (f) importBackupFile(f);
@@ -489,17 +558,22 @@
 
   async function init() {
     GPSLogger.info('boot', 'app start', { path: basePath() });
-    await loadStrings();
+    const savedLang = localStorage.getItem(LANG_KEY) || 'en';
+    $('langSelect').value = savedLang === 'es' ? 'es' : 'en';
+    await loadStrings(savedLang);
     bindEvents();
     setupFirstVisitPulse();
 
     if (!loadFromUrl()) {
       setUiStep(0);
       $('inputBill').focus();
+    } else {
+      $('billPill').classList.remove('hidden');
     }
 
     if (typeof GPSTour !== 'undefined') {
       GPSTour.init();
+      GPSTour.setStrings(strings);
       $('btnHowTo').addEventListener('click', () => GPSTour.start());
     }
   }

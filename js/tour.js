@@ -1,98 +1,23 @@
 /**
- * Driver.js guided tour — manual trigger only, evolves with app steps.
+ * Driver.js guided tour — manual trigger only, i18n-aware.
  */
 (function (global) {
   'use strict';
 
   let driver = null;
+  let tourStrings = null;
 
-  function getSteps() {
-    return [
-      {
-        element: '#inputBill',
-        popover: {
-          title: '① Bill total',
-          description: 'Type the full receipt amount. This stays pinned at the top.',
-          side: 'bottom',
-          align: 'center',
-        },
-      },
-      {
-        element: '#btnAction',
-        popover: {
-          title: '② Confirm',
-          description: 'Lock in the total and move to the next step.',
-          side: 'top',
-          align: 'center',
-        },
-      },
-      {
-        element: '#inputNames',
-        popover: {
-          title: '③ Who ate?',
-          description: 'Comma-separated names. Everyone who shares the bill.',
-          side: 'bottom',
-          align: 'start',
-        },
-      },
-      {
-        element: '#currentPayerName',
-        popover: {
-          title: '④ One person at a time',
-          description: 'Each payer logs their items. Running total shows on the right.',
-          side: 'bottom',
-          align: 'start',
-        },
-      },
-      {
-        element: '#inputItemName',
-        popover: {
-          title: '⑤ Add items',
-          description: 'Name + price. Tap ADD or press Enter on the price field.',
-          side: 'bottom',
-          align: 'start',
-        },
-      },
-      {
-        element: '#splitPartners',
-        popover: {
-          title: '⑥ Split shared food',
-          description:
-            'Check who shares an item. Enter the FULL price — we split it automatically. The other person gets their half on their turn.',
-          side: 'top',
-          align: 'start',
-        },
-      },
-      {
-        element: '#billPill',
-        popover: {
-          title: '⑦ Reconcile',
-          description:
-            'At the end, assigned totals must match the bill. Green = good. Amber = fix items or check the receipt.',
-          side: 'bottom',
-          align: 'end',
-        },
-      },
-      {
-        element: '#btnShare',
-        popover: {
-          title: '⑧ Save via URL',
-          description: 'Copy the link anytime — your whole session lives in the URL bookmark.',
-          side: 'bottom',
-          align: 'end',
-        },
-      },
-      {
-        element: '#btnExport',
-        popover: {
-          title: '⑨ Backup file',
-          description: 'Export JSON to share with friends or import later. Works across versions.',
-          side: 'top',
-          align: 'center',
-        },
-      },
-    ];
-  }
+  const STEP_ELEMENTS = [
+    '#inputBill',
+    '#btnAction',
+    '#inputNames',
+    '#currentPayerName',
+    '#inputItemName',
+    '#splitPartners',
+    '#billPill',
+    '#btnCopyLink',
+    '#btnCreatePdf',
+  ];
 
   function mobileSide(element, preferred) {
     if (window.innerWidth < 480) {
@@ -103,9 +28,23 @@
     return preferred;
   }
 
+  const SIDES = ['bottom', 'top', 'bottom', 'bottom', 'bottom', 'top', 'bottom', 'top', 'top'];
+
   const GPSTour = {
+    setStrings(s) {
+      tourStrings = s && s.tour ? s.tour : null;
+      if (driver && tourStrings) {
+        driver.setConfig({
+          nextBtnText: tourStrings.next || 'NEXT →',
+          prevBtnText: tourStrings.prev || '← BACK',
+          doneBtnText: tourStrings.done || 'DONE',
+        });
+      }
+    },
+
     init() {
       if (typeof window.driver === 'undefined') return;
+      const t = tourStrings || {};
       driver = window.driver.js.driver({
         showProgress: true,
         animate: true,
@@ -113,19 +52,9 @@
         stagePadding: 8,
         stageRadius: 4,
         popoverClass: 'gps-tour',
-        nextBtnText: 'NEXT →',
-        prevBtnText: '← BACK',
-        doneBtnText: 'DONE',
-        onPopoverRender: (popover, opts) => {
-          const el = opts.element;
-          if (el && opts.state.activeIndex != null) {
-            const steps = getSteps();
-            const step = steps[opts.state.activeIndex];
-            if (step && step.popover.side) {
-              popover.wrapper.style.maxWidth = 'min(340px, calc(100vw - 32px))';
-            }
-          }
-        },
+        nextBtnText: t.next || 'NEXT →',
+        prevBtnText: t.prev || '← BACK',
+        doneBtnText: t.done || 'DONE',
       });
     },
 
@@ -133,22 +62,26 @@
       if (!driver) this.init();
       if (!driver) return;
 
-      const steps = getSteps().map((s) => {
-        const el = document.querySelector(s.element);
-        if (!el || el.offsetParent === null && s.element !== '#inputNames') {
+      const stepsDef = (tourStrings && tourStrings.steps) || [];
+      const steps = STEP_ELEMENTS.map((sel, i) => {
+        const el = document.querySelector(sel);
+        if (!el) return null;
+        if (el.offsetParent === null && sel !== '#inputNames' && sel !== '#btnCopyLink' && sel !== '#btnCreatePdf') {
           return null;
         }
+        const def = stepsDef[i] || {};
         return {
-          ...s,
+          element: sel,
           popover: {
-            ...s.popover,
-            side: el ? mobileSide(el, s.popover.side) : s.popover.side,
+            title: def.title || '',
+            description: def.description || '',
+            side: el ? mobileSide(el, SIDES[i] || 'bottom') : 'bottom',
+            align: 'start',
           },
         };
       }).filter(Boolean);
 
       if (!steps.length) return;
-
       driver.setSteps(steps);
       driver.drive();
     },

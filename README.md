@@ -50,7 +50,9 @@ The check arrives. Everyone ordered different things. Someone shared the fish st
 | **URL bookmark** | Whole session encoded in `#s=...` — bookmark to restore |
 | **Import / Export** | JSON backup file, versioned format |
 | **How to Use** | [Driver.js](https://driverjs.com/) tour — button only, never auto-runs |
-| **i18n-ready** | Strings in `i18n/en/` — PR your language in a new folder |
+| **i18n** | English + Spanish (`i18n/en`, `i18n/es`) — language selector in header |
+| **PDF export** | Hacker-styled itemized PDF — filename `YYYY-mm-dd - HH:mm:ss.pdf` |
+| **Copy Link** | Session URL copy on summary screen |
 | **Debug logs** | Client-side logger in `localStorage` (`js/logger.js`) |
 | **Telegram bot** | Optional guided bot in `/bot` (self-hosted) |
 
