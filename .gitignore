@@ -1,16 +1,9 @@
 # Dependencies
 node_modules/
-bot/data/
-bot/.env
-.env
-.env.*
-!.env.example
-!bot/.env.example
 
 # Logs & debug
 logs/
 *.log
-bot/data/
 
 # OS / IDE
 .DS_Store
@@ -19,7 +12,7 @@ Thumbs.db
 .vscode/
 *.swp
 
-# Python
+# Python (if added later)
 __pycache__/
 *.py[cod]
 .venv/
@@ -31,6 +24,9 @@ tmp/
 *.tmp
 
 # Secrets — never publish
+.env
+.env.*
 *.pem
 *.key
 credentials.json
+bot/data/
