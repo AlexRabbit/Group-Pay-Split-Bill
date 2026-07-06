@@ -539,39 +539,20 @@ textarea { min-height: 100px; resize: vertical; }
   font-size: 0.72rem;
 }
 
-.payer-breakdown {
+.payer-row {
   border-bottom: 1px solid rgba(0, 255, 65, 0.1);
 }
 
-.payer-breakdown:last-child {
+.payer-row:last-of-type {
   border-bottom: none;
 }
 
-.payer-breakdown > summary {
-  list-style: none;
+.payer-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   padding: 10px 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-
-.payer-breakdown > summary::-webkit-details-marker {
-  display: none;
-}
-
-.payer-breakdown > summary::after {
-  content: '▸';
-  color: var(--text-dim);
-  font-size: 0.8rem;
-  transition: transform 0.2s;
-  flex-shrink: 0;
-}
-
-.payer-breakdown[open] > summary::after {
-  transform: rotate(90deg);
 }
 
 .payer-edit-btn {
@@ -587,11 +568,38 @@ textarea { min-height: 100px; resize: vertical; }
   text-underline-offset: 3px;
   flex: 1;
   min-width: 0;
+  text-transform: lowercase;
 }
 
 .payer-edit-btn:hover, .payer-edit-btn:focus-visible {
   text-shadow: 0 0 8px var(--green-glow);
   outline: none;
+}
+
+.payer-amount-btn {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  color: var(--green);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+}
+
+.payer-amount-btn:hover, .payer-amount-btn:focus-visible {
+  background: var(--green-glow);
+  outline: none;
+}
+
+.payer-amount-btn.amount-open {
+  box-shadow: 0 0 0 1px var(--green-border);
+}
+
+.breakdown-list.hidden {
+  display: none;
 }
 
 .breakdown-list {
@@ -614,6 +622,26 @@ textarea { min-height: 100px; resize: vertical; }
   border-left: 2px solid var(--amber);
   padding-left: 8px;
   margin-left: -2px;
+}
+
+.qr-panel {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.qr-panel canvas {
+  max-width: 220px;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.qr-toggle-btn {
+  width: 100%;
+  margin-top: 12px;
+  min-height: 44px;
 }
 
 .breakdown-list .item-name {

@@ -1,5 +1,5 @@
 /**
- * Compact URL state — minified JSON + optional LZ-String compression.
+ * Compact URL state v2 — strip IDs, LZ-String, minimal payload.
  */
 (function (root, factory) {
   if (typeof module !== 'undefined' && module.exports) {
@@ -10,29 +10,50 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  /** Compact array format to shrink URLs before compression. */
+  let idCounter = 0;
+  function nextId(prefix) {
+    idCounter += 1;
+    return prefix + idCounter;
+  }
+
+  function resetIds() {
+    idCounter = 0;
+  }
+
+  /** v2: no random IDs — names + cents only */
   function compact(state) {
+    const payerIdx = {};
+    state.payers.forEach((p, i) => {
+      payerIdx[p.id] = i;
+    });
+    const splitIdx = {};
+    (state.splits || []).forEach((s, i) => {
+      splitIdx[s.id] = i;
+    });
+
     return [
-      state.v || 1,
+      2,
       state.billTotalCents || 0,
-      (state.payers || []).map((p) => [
-        p.id,
+      state.payers.map((p) => [
         p.name,
         (p.items || []).map((it) => {
-          const row = [it.id, it.name, it.cents];
-          if (it.splitId) row.push(it.splitId);
+          const row = [it.name, it.cents];
+          if (it.splitId != null && splitIdx[it.splitId] !== undefined) row.push(splitIdx[it.splitId]);
           const flags = (it.isSplit ? 1 : 0) | (it.autoAdded ? 2 : 0) | (it.editable === false ? 4 : 0);
           if (flags) row.push(flags);
           return row;
         }),
       ]),
-      (state.splits || []).map((s) => [s.id, s.name, s.fullCents, s.participants, s.createdBy]),
+      (state.splits || []).map((s) => [
+        s.name,
+        s.fullCents,
+        s.participants.map((pid) => payerIdx[pid]),
+        payerIdx[s.createdBy],
+      ]),
     ];
   }
 
-  function expand(raw) {
-    if (raw && raw.payers) return raw;
-    if (!Array.isArray(raw) || raw.length < 3) return null;
+  function expandV1(raw) {
     const [v, billTotalCents, payersRaw, splitsRaw] = raw;
     const payers = (payersRaw || []).map((p) => ({
       id: p[0],
@@ -63,8 +84,56 @@
     return { v: v || 1, billTotalCents, payers, splits };
   }
 
+  function expandV2(raw) {
+    resetIds();
+    const [, billTotalCents, payersRaw, splitsRaw] = raw;
+    const payers = (payersRaw || []).map((p, pi) => ({
+      id: 'p' + pi,
+      name: p[0],
+      items: [],
+    }));
+
+    const splits = (splitsRaw || []).map((s, si) => ({
+      id: 'split_' + si,
+      name: s[0],
+      fullCents: s[1],
+      participants: (s[2] || []).map((i) => 'p' + i),
+      createdBy: 'p' + s[3],
+    }));
+
+    payersRaw.forEach((p, pi) => {
+      (p[1] || []).forEach((row) => {
+        const item = {
+          id: nextId('i_'),
+          name: row[0],
+          cents: row[1],
+          splitId: row[2] !== undefined ? 'split_' + row[2] : null,
+          isSplit: false,
+          editable: true,
+        };
+        const flags = row[3] || 0;
+        if (flags & 1) item.isSplit = true;
+        if (flags & 2) item.autoAdded = true;
+        if (flags & 4) item.editable = false;
+        payers[pi].items.push(item);
+      });
+    });
+
+    return { v: 2, billTotalCents, payers, splits };
+  }
+
+  function expand(raw) {
+    if (raw && raw.payers) return raw;
+    if (!Array.isArray(raw) || raw.length < 3) return null;
+    if (raw[0] === 2) return expandV2(raw);
+    return expandV1(raw);
+  }
+
   function encode(state, LZ) {
     const payload = JSON.stringify(compact(state));
+    if (LZ && LZ.compressToBase64) {
+      return 'b:' + LZ.compressToBase64(payload);
+    }
     if (LZ && LZ.compressToEncodedURIComponent) {
       return 'z:' + LZ.compressToEncodedURIComponent(payload);
     }
@@ -75,7 +144,11 @@
     if (!token) return null;
     try {
       let json;
-      if (token.startsWith('z:')) {
+      if (token.startsWith('b:')) {
+        const body = token.slice(2);
+        if (!LZ || !LZ.decompressFromBase64) return null;
+        json = LZ.decompressFromBase64(body);
+      } else if (token.startsWith('z:')) {
         const body = token.slice(2);
         if (!LZ || !LZ.decompressFromEncodedURIComponent) return null;
         json = LZ.decompressFromEncodedURIComponent(body);
@@ -95,24 +168,23 @@
     }
   }
 
-  function buildUrl(pathname, lang, hashToken, searchParams) {
-    const params = new URLSearchParams(searchParams || '');
+  function buildUrl(pathname, lang, hashToken) {
+    const params = new URLSearchParams();
     if (lang && lang !== 'en') params.set('lang', lang);
-    else params.delete('lang');
     const qs = params.toString();
-    return pathname + (qs ? '?' + qs : '') + (hashToken ? '#d=' + hashToken : '');
+    return pathname + (qs ? '?' + qs : '') + (hashToken ? '#p=' + encodeURIComponent(hashToken) : '');
   }
 
   function parseHash(hash) {
     const h = (hash || '').replace(/^#/, '');
     if (!h) return null;
-    const m = h.match(/^(?:d|s)=(.+)$/);
+    const m = h.match(/^(?:p|d|s)=(.+)$/);
     if (m) {
-      const body = m[1];
-      if (body.startsWith('z:') || body.startsWith('s:')) return body;
+      const body = decodeURIComponent(m[1]);
+      if (body.startsWith('b:') || body.startsWith('z:') || body.startsWith('s:')) return body;
       return 's:' + body;
     }
-    if (h.startsWith('z:') || h.startsWith('s:')) return h;
+    if (h.startsWith('b:') || h.startsWith('z:') || h.startsWith('s:')) return h;
     return null;
   }
 

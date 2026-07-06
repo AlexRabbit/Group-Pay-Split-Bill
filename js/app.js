@@ -33,6 +33,7 @@
   }
 
   function showError(msg) {
+    hapticError();
     const el = $('errorToast');
     el.textContent = msg;
     el.classList.remove('hidden');
@@ -49,6 +50,10 @@
     $('errorToast').classList.add('hidden');
     clearTimeout(showInfo._t);
     showInfo._t = setTimeout(() => el.classList.add('hidden'), 3000);
+  }
+
+  function hapticError() {
+    if (navigator.vibrate) navigator.vibrate([40, 35, 40]);
   }
 
   function t(path, fallback) {
@@ -247,15 +252,15 @@
     $('labelEachOwes').textContent = t('labels.eachOwes', 'Each person owes');
     $('hintSummaryEdit').textContent = t(
       'steps.summary.tapNameToEdit',
-      'Tap a name to edit · expand to verify'
+      'Tap name to edit · tap amount to see items'
     );
 
     let html = '';
     totals.perPayer.forEach((p, idx) => {
       const payer = state.payers.find((x) => x.id === p.id);
       const items = payer ? payer.items : [];
-      html += '<details class="payer-breakdown">';
-      html += '<summary class="summary-row">';
+      html += '<div class="payer-row" data-payer-idx="' + idx + '">';
+      html += '<div class="summary-row payer-head">';
       html +=
         '<button type="button" class="payer-edit-btn" data-payer-idx="' +
         idx +
@@ -264,9 +269,16 @@
         '">' +
         escapeHtml(p.name) +
         '</button>';
-      html += '<span class="amount">' + formatMoney(p.cents) + '</span>';
-      html += '</summary>';
-      html += '<ul class="breakdown-list">';
+      html +=
+        '<button type="button" class="payer-amount-btn amount" data-payer-idx="' +
+        idx +
+        '" aria-expanded="false" title="' +
+        escapeHtml(t('labels.expand', 'Show items')) +
+        '">' +
+        formatMoney(p.cents) +
+        '</button>';
+      html += '</div>';
+      html += '<ul class="breakdown-list hidden" data-breakdown="' + idx + '">';
       if (!items.length) {
         html +=
           '<li><span class="item-name">' +
@@ -285,7 +297,7 @@
             '</span></li>';
         });
       }
-      html += '</ul></details>';
+      html += '</ul></div>';
     });
 
     const assignedLabel = t('labels.assigned', 'Assigned');
@@ -312,6 +324,23 @@
         editPayer(parseInt(btn.dataset.payerIdx, 10));
       });
     });
+
+    $('summaryRows').querySelectorAll('.payer-amount-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = btn.dataset.payerIdx;
+        const list = $('summaryRows').querySelector('[data-breakdown="' + idx + '"]');
+        if (!list) return;
+        list.classList.toggle('hidden');
+        const isOpen = !list.classList.contains('hidden');
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        btn.classList.toggle('amount-open', isOpen);
+      });
+    });
+
+    $('qrPanel').classList.add('hidden');
+    $('btnShowQr').textContent = t('steps.summary.showQr', 'Show QR');
   }
 
   function editPayer(index) {
@@ -336,9 +365,10 @@
       return false;
     }
     const payer = state.payers[payerIndex];
-    if (!payer || payer.items.length < 1) {
+    const total = payer ? SE.payerTotalCents(payer) : 0;
+    if (!payer || payer.items.length < 1 || total <= 0) {
       showError(
-        t('errors.noItemsForPayer', '{name} needs at least one item').replace(
+        t('errors.noItemsForPayer', '{name} needs at least one item with a price').replace(
           '{name}',
           payer ? payer.name : '?'
         )
@@ -532,7 +562,8 @@
 
     try {
       if (navigator.share && typeof GPSPdf !== 'undefined') {
-        const blob = GPSPdf.toBlob(state, strings, SE);
+        const url = getShareUrl();
+        const blob = await GPSPdf.toBlob(state, strings, SE, url);
         const file = new File([blob], GPSPdf.pdfFilename(), { type: 'application/pdf' });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({ ...shareData, files: [file] });
@@ -557,13 +588,33 @@
   }
 
   function createPdf() {
-    try {
-      if (typeof GPSPdf === 'undefined') throw new Error('PDF module missing');
-      GPSPdf.generate(state, strings, SE);
-      GPSLogger.info('pdf', 'generated');
-    } catch (e) {
+    const url = getShareUrl();
+    GPSPdf.generate(state, strings, SE, url).catch((e) => {
       showError(t('errors.pdfFailed', 'Could not create PDF'));
-      GPSLogger.error('pdf', e.message);
+      GPSLogger.error('pdf', e.message || String(e));
+    });
+    GPSLogger.info('pdf', 'generated');
+  }
+
+  async function toggleQrPanel() {
+    const panel = $('qrPanel');
+    const btn = $('btnShowQr');
+    const visible = !panel.classList.contains('hidden');
+    if (visible) {
+      panel.classList.add('hidden');
+      btn.textContent = t('steps.summary.showQr', 'Show QR');
+      return;
+    }
+    try {
+      syncUrl();
+      const url = getShareUrl();
+      await GPSQr.render($('qrCanvas'), url);
+      panel.classList.remove('hidden');
+      btn.textContent = t('steps.summary.hideQr', 'Hide QR');
+      panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (e) {
+      showError(t('errors.qrFailed', 'Could not generate QR'));
+      GPSLogger.error('qr', e.message);
     }
   }
 
@@ -662,6 +713,12 @@
         if (s.steps.summary.createPdf) $('btnCreatePdf').textContent = s.steps.summary.createPdf;
         if (s.steps.summary.export) $('btnExport').textContent = s.steps.summary.export;
         if (s.steps.summary.import) $('btnImport').textContent = s.steps.summary.import;
+        if (s.steps.summary.showQr && !$('qrPanel').classList.contains('hidden')) {
+          $('btnShowQr').textContent = s.steps.summary.hideQr || 'Hide QR';
+        } else if (s.steps.summary.showQr) {
+          $('btnShowQr').textContent = s.steps.summary.showQr;
+        }
+        if (s.steps.summary.qrHint) $('hintQr').textContent = s.steps.summary.qrHint;
       }
     }
     if (s.app) {
@@ -694,6 +751,7 @@
     $('btnAddItem').addEventListener('click', addCurrentItem);
     $('btnCopyLink').addEventListener('click', copyShareLink);
     $('btnShare').addEventListener('click', shareSession);
+    $('btnShowQr').addEventListener('click', toggleQrPanel);
     $('btnCreatePdf').addEventListener('click', createPdf);
     $('btnExport').addEventListener('click', exportBackup);
     $('btnImport').addEventListener('click', () => $('inputImport').click());

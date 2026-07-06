@@ -46,9 +46,12 @@
       "export": "EXPORTAR",
       "import": "IMPORTAR",
       "backupHint": "Respaldo / restaurar sesión",
-      "tapNameToEdit": "Toca un nombre para editar · expande para verificar",
+      "tapNameToEdit": "Toca el nombre para editar · toca el monto para ver artículos",
       "editPayer": "Editar artículos",
-      "noItemsListed": "Sin artículos"
+      "noItemsListed": "Sin artículos",
+      "showQr": "Mostrar QR",
+      "hideQr": "Ocultar QR",
+      "qrHint": "Escanea para restaurar esta sesión"
     }
   },
   "labels": {
@@ -72,8 +75,9 @@
     "copyLink": "No se pudo copiar el enlace",
     "pdfFailed": "No se pudo crear el PDF",
     "pendingItem": "Tienes un artículo escrito — toca AGREGAR primero",
-    "noItemsForPayer": "{name} necesita al menos un artículo antes de continuar",
-    "shareFailed": "No se pudo compartir — prueba Copiar enlace"
+    "noItemsForPayer": "{name} necesita al menos un artículo con precio mayor a $0",
+    "shareFailed": "No se pudo compartir — prueba Copiar enlace",
+    "qrFailed": "No se pudo generar el código QR"
   },
   "toasts": {
     "linkCopied": "Enlace copiado — guárdalo en favoritos",
@@ -93,7 +97,8 @@
     "difference": "Diferencia",
     "balanced": "CUADRADO",
     "unbalanced": "DESCUADRADO",
-    "footer": "group-pay-split-bill · sin matemáticas en servilleta"
+    "footer": "group-pay-split-bill · sin matemáticas en servilleta",
+    "qrLabel": "QR DE SESIÓN"
   },
   "tour": {
     "next": "SIGUIENTE →",

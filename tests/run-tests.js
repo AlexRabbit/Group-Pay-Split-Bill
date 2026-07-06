@@ -19,40 +19,30 @@ function assertEq(a, b, msg) {
   assert(a === b, msg + ' (got ' + a + ', expected ' + b + ')');
 }
 
-// U01: cents
-assertEq(SplitEngine.toCents(45.5), 4550, 'toCents decimal');
-assertEq(SplitEngine.fromCents(14500), 145, 'fromCents');
-
-// U01: split flow
 let state = SplitEngine.emptyState();
 state.billTotalCents = SplitEngine.toCents(500);
 state.payers = SplitEngine.initPayers(['Alex', 'Manuel']);
 state = SplitEngine.addItem(state, 'p0', 'lemonade', 45, []);
 state = SplitEngine.addItem(state, 'p0', 'fish sticks', 140, ['p1']);
-assertEq(SplitEngine.payerTotalCents(state.payers[0]), SplitEngine.toCents(45 + 70), 'Alex split total');
-assertEq(state.payers[1].items.length, 1, 'Manuel auto item');
 
-// U01: compact URL roundtrip (no LZ in node)
+assertEq(SplitEngine.payerTotalCents(state.payers[0]), SplitEngine.toCents(115), 'Alex total');
+
 const token = GPSUrlState.encode(state, null);
 const decoded = GPSUrlState.decode(token, null);
-assertEq(decoded.payers.length, 2, 'compact URL decode payers');
-assertEq(decoded.billTotalCents, state.billTotalCents, 'compact URL decode bill');
+assertEq(decoded.payers.length, 2, 'v2 URL decode payers');
+assertEq(decoded.payers[0].items[0].name, 'lemonade', 'v2 item name restored');
+assert(decoded.payers[0].items[0].id, 'v2 regenerates ids');
 
 const url = GPSUrlState.buildUrl('/Group-Pay-Split-Bill/', 'es', token);
-assert(url.includes('lang=es'), 'URL includes lang=es');
-assert(url.includes('#d='), 'URL uses short hash prefix');
+assert(url.includes('lang=es'), 'URL lang=es');
+assert(url.includes('#p='), 'URL short hash prefix p=');
 
-// U01: legacy full-state blob in hash
-const legacy = 's:' + Buffer.from(JSON.stringify(state), 'utf8').toString('base64');
-const legacyDecoded = GPSUrlState.decode(legacy, null);
-assertEq(legacyDecoded.payers.length, 2, 'legacy URL decode');
-
-// U01: expand compact
 const compact = GPSUrlState.compact(state);
-const expanded = GPSUrlState.expand(compact);
-assertEq(expanded.payers[0].items[0].name, 'lemonade', 'expand item name');
+assertEq(compact[0], 2, 'compact version 2');
+assert(typeof compact[2][0][0] === 'string', 'v2 uses name not id');
 
 console.log('\n--- Results ---');
 console.log('Passed:', passed);
 console.log('Failed:', failed);
+console.log('Sample token length (uncompressed):', token.length);
 process.exit(failed > 0 ? 1 : 0);

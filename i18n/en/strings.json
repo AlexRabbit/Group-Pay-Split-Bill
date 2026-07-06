@@ -46,9 +46,12 @@
       "export": "EXPORT",
       "import": "IMPORT",
       "backupHint": "Backup / restore session",
-      "tapNameToEdit": "Tap a name to edit their items · expand to verify",
+      "tapNameToEdit": "Tap name to edit · tap amount to see items",
       "editPayer": "Edit items",
-      "noItemsListed": "No items"
+      "noItemsListed": "No items",
+      "showQr": "Show QR",
+      "hideQr": "Hide QR",
+      "qrHint": "Scan to restore this session"
     }
   },
   "labels": {
@@ -72,8 +75,9 @@
     "copyLink": "Could not copy link",
     "pdfFailed": "Could not create PDF",
     "pendingItem": "You have an item typed — tap ADD ITEM first",
-    "noItemsForPayer": "{name} needs at least one item before continuing",
-    "shareFailed": "Could not share — try Copy Link instead"
+    "noItemsForPayer": "{name} needs at least one item with a price above $0",
+    "shareFailed": "Could not share — try Copy Link instead",
+    "qrFailed": "Could not generate QR code"
   },
   "toasts": {
     "linkCopied": "Link copied — bookmark to save session",
@@ -93,7 +97,8 @@
     "difference": "Difference",
     "balanced": "BALANCED",
     "unbalanced": "UNBALANCED",
-    "footer": "group-pay-split-bill · no napkin math"
+    "footer": "group-pay-split-bill · no napkin math",
+    "qrLabel": "SESSION QR"
   },
   "tour": {
     "next": "NEXT →",
