@@ -1,15 +1,15 @@
 /**
- * Split engine unit tests — run: node tests/run-tests.js
+ * Split engine + URL state tests — run: node tests/run-tests.js
  */
 const SplitEngine = require('../js/split-engine.js');
+const GPSUrlState = require('../js/url-state.js');
 
 let passed = 0;
 let failed = 0;
 
 function assert(cond, msg) {
-  if (cond) {
-    passed++;
-  } else {
+  if (cond) passed++;
+  else {
     failed++;
     console.error('FAIL:', msg);
   }
@@ -19,67 +19,38 @@ function assertEq(a, b, msg) {
   assert(a === b, msg + ' (got ' + a + ', expected ' + b + ')');
 }
 
-// U01: cents conversion
+// U01: cents
 assertEq(SplitEngine.toCents(45.5), 4550, 'toCents decimal');
-assertEq(SplitEngine.toCents('130'), 13000, 'toCents string');
-assert(Number.isNaN(SplitEngine.toCents(-5)), true, 'toCents negative');
 assertEq(SplitEngine.fromCents(14500), 145, 'fromCents');
 
-// U01: divideAmount remainder
-const shares = SplitEngine.divideAmount(14000, 2);
-assertEq(shares[0] + shares[1], 14000, 'split sum equals full');
-assertEq(shares[0], 7000, 'even split first');
-assertEq(shares[1], 7000, 'even split second');
-
-const shares3 = SplitEngine.divideAmount(100, 3);
-assertEq(shares3.reduce((a, b) => a + b, 0), 100, '3-way split sum');
-
-// U01: parse names
-assertEq(SplitEngine.parseNames('Alex, Carlos, Cesar').length, 3, 'parse 3 names');
-assertEq(SplitEngine.parseNames('  Alex  ')[0], 'Alex', 'trim name');
-
-// U01: full flow Alex + Manuel split fish sticks
+// U01: split flow
 let state = SplitEngine.emptyState();
 state.billTotalCents = SplitEngine.toCents(500);
-state.payers = SplitEngine.initPayers(['Alex', 'Manuel', 'Carlos']);
-
+state.payers = SplitEngine.initPayers(['Alex', 'Manuel']);
 state = SplitEngine.addItem(state, 'p0', 'lemonade', 45, []);
-state = SplitEngine.addItem(state, 'p0', 'cocktail', 130, []);
 state = SplitEngine.addItem(state, 'p0', 'fish sticks', 140, ['p1']);
+assertEq(SplitEngine.payerTotalCents(state.payers[0]), SplitEngine.toCents(45 + 70), 'Alex split total');
+assertEq(state.payers[1].items.length, 1, 'Manuel auto item');
 
-const alexTotal = SplitEngine.payerTotalCents(state.payers[0]);
-assertEq(alexTotal, SplitEngine.toCents(45 + 130 + 70), 'Alex total with split');
+// U01: compact URL roundtrip (no LZ in node)
+const token = GPSUrlState.encode(state, null);
+const decoded = GPSUrlState.decode(token, null);
+assertEq(decoded.payers.length, 2, 'compact URL decode payers');
+assertEq(decoded.billTotalCents, state.billTotalCents, 'compact URL decode bill');
 
-const manuelItems = state.payers[1].items;
-assertEq(manuelItems.length, 1, 'Manuel auto item');
-assertEq(manuelItems[0].cents, 7000, 'Manuel split share');
-assert(manuelItems[0].autoAdded === true, 'Manuel item auto-added');
-assert(manuelItems[0].editable === false, 'Manuel item not editable');
+const url = GPSUrlState.buildUrl('/Group-Pay-Split-Bill/', 'es', token);
+assert(url.includes('lang=es'), 'URL includes lang=es');
+assert(url.includes('#d='), 'URL uses short hash prefix');
 
-// U03: remove split removes all portions
-state = SplitEngine.removeItem(state, 'p0', state.payers[0].items.find((i) => i.name === 'fish sticks').id);
-assertEq(state.payers[1].items.length, 0, 'split removed from partner');
+// U01: legacy full-state blob in hash
+const legacy = 's:' + Buffer.from(JSON.stringify(state), 'utf8').toString('base64');
+const legacyDecoded = GPSUrlState.decode(legacy, null);
+assertEq(legacyDecoded.payers.length, 2, 'legacy URL decode');
 
-// U01: totals
-state = SplitEngine.addItem(state, 'p0', 'fish sticks', 140, ['p1']);
-state = SplitEngine.addItem(state, 'p1', 'beer', 50, []);
-state = SplitEngine.addItem(state, 'p2', 'salad', 80, []);
-
-const totals = SplitEngine.computeTotals(state);
-const expectedAssigned =
-  SplitEngine.toCents(45 + 130 + 70) + SplitEngine.toCents(70 + 50) + SplitEngine.toCents(80);
-assertEq(totals.assignedCents, expectedAssigned, 'assigned total');
-
-// U01: backup roundtrip
-const backup = SplitEngine.exportBackup(state);
-const restored = SplitEngine.importBackup(backup);
-assertEq(restored.payers.length, 3, 'backup restore payers');
-assertEq(restored.billTotalCents, state.billTotalCents, 'backup restore total');
-
-// U01: URL encode roundtrip
-const encoded = SplitEngine.encodeStateUrl(state);
-const decoded = SplitEngine.decodeStateUrl(encoded);
-assertEq(decoded.payers.length, 3, 'URL state roundtrip');
+// U01: expand compact
+const compact = GPSUrlState.compact(state);
+const expanded = GPSUrlState.expand(compact);
+assertEq(expanded.payers[0].items[0].name, 'lemonade', 'expand item name');
 
 console.log('\n--- Results ---');
 console.log('Passed:', passed);

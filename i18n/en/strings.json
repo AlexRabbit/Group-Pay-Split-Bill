@@ -3,6 +3,7 @@
     "title": "Group Pay",
     "subtitle": "Split the bill. No math at the table.",
     "howToUse": "How to Use",
+    "howToUseShort": "GUIDE",
     "logoBefore": "Group Pay by",
     "logoAuthor": "AlexRabbit",
     "logoUrl": "https://github.com/AlexRabbit/Group-Pay-Split-Bill"
@@ -27,7 +28,7 @@
     },
     "items": {
       "title": "> ORDER_LOG",
-      "hint": "Add what this person ordered.",
+      "hint": "Add what this person ordered, then tap ADD ITEM before continuing.",
       "itemNamePlaceholder": "item name",
       "itemPricePlaceholder": "0.00",
       "addItem": "ADD ITEM",
@@ -40,10 +41,14 @@
       "unbalanced": "Difference detected — review items.",
       "restart": "NEW BILL",
       "copyLink": "Copy Link",
+      "share": "Share",
       "createPdf": "Create a PDF",
       "export": "EXPORT",
       "import": "IMPORT",
-      "backupHint": "Backup / restore session"
+      "backupHint": "Backup / restore session",
+      "tapNameToEdit": "Tap a name to edit their items · expand to verify",
+      "editPayer": "Edit items",
+      "noItemsListed": "No items"
     }
   },
   "labels": {
@@ -56,7 +61,8 @@
     "unassigned": "unassigned",
     "overAssigned": "over-assigned",
     "back": "BACK",
-    "remove": "Remove"
+    "remove": "Remove",
+    "expand": "Show items"
   },
   "errors": {
     "itemName": "Enter an item name",
@@ -64,17 +70,24 @@
     "billTotal": "Enter a valid bill total",
     "names": "Add at least one name",
     "copyLink": "Could not copy link",
-    "pdfFailed": "Could not create PDF"
+    "pdfFailed": "Could not create PDF",
+    "pendingItem": "You have an item typed — tap ADD ITEM first",
+    "noItemsForPayer": "{name} needs at least one item before continuing",
+    "shareFailed": "Could not share — try Copy Link instead"
   },
   "toasts": {
-    "linkCopied": "Link copied — bookmark to save session"
+    "linkCopied": "Link copied — bookmark to save session",
+    "shared": "Shared successfully"
   },
   "pdf": {
     "title": "GROUP PAY — BILL SPLIT",
     "generated": "Generated",
     "billTotal": "BILL TOTAL",
+    "payersCount": "People",
     "payerSection": "PAYER",
     "subtotal": "Subtotal",
+    "splitsSection": "SHARED ITEMS LOG",
+    "noItems": "no items",
     "reconcile": "RECONCILE",
     "assigned": "Assigned",
     "difference": "Difference",
@@ -89,39 +102,67 @@
     "steps": [
       {
         "title": "① Bill total",
-        "description": "Type the full receipt amount. This stays pinned at the top."
+        "description": "Type the full receipt amount."
       },
       {
-        "title": "② Confirm",
-        "description": "Lock in the total and move to the next step."
+        "title": "② Confirm / Back",
+        "description": "CONFIRM moves forward. BACK appears on later steps if you need to fix something."
       },
       {
         "title": "③ Who ate?",
-        "description": "Comma-separated names. Everyone who shares the bill."
+        "description": "Comma-separated names. Everyone sharing the bill."
       },
       {
-        "title": "④ One person at a time",
-        "description": "Each payer logs their items. Running total shows on the right."
+        "title": "④ Current person",
+        "description": "One diner at a time. Their running total is on the right."
       },
       {
         "title": "⑤ Add items",
-        "description": "Name + price. Tap ADD or press Enter on the price field."
+        "description": "Name + price, then tap ADD ITEM. Do not skip ADD ITEM or you'll lose the entry."
       },
       {
         "title": "⑥ Split shared food",
-        "description": "Check who shares an item. Enter the FULL price — we split it automatically."
+        "description": "Check who shares. Enter the FULL price — we split it automatically."
       },
       {
         "title": "⑦ Reconcile",
-        "description": "At the end, assigned totals must match the bill. Green = good. Amber = fix items."
+        "description": "Totals must match the bill. Green = good. Amber = review items."
       },
       {
         "title": "⑧ Copy link",
-        "description": "Copy the session URL — bookmark it to restore everything later."
+        "description": "Short compressed link with your session. Includes ?lang= if not English."
       },
       {
         "title": "⑨ PDF & backup",
-        "description": "Create a formatted PDF or export JSON to share with friends."
+        "description": "Full itemized PDF with split tags, or export JSON."
+      },
+      {
+        "title": "Language",
+        "description": "EN / ES. Saved in the URL as ?lang=es for shareable Spanish links."
+      },
+      {
+        "title": "This guide",
+        "description": "Shows tips for the screen you're on — never runs automatically."
+      },
+      {
+        "title": "Go back",
+        "description": "BACK lets you fix the bill total, names, or previous people's items."
+      },
+      {
+        "title": "Added items",
+        "description": "Items listed here are saved. Remove with × if needed."
+      },
+      {
+        "title": "Next / Finish",
+        "description": "Requires at least one item per person. Won't advance if ADD ITEM was skipped."
+      },
+      {
+        "title": "Verify breakdown",
+        "description": "Expand each person to see every item. Tap their name to go back and edit."
+      },
+      {
+        "title": "Share",
+        "description": "Native share sheet on mobile — sends the short link and PDF together."
       }
     ]
   }

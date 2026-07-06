@@ -71,7 +71,7 @@
     $('billPill').classList.toggle('hidden', step === 0 || !state.billTotalCents);
 
     const btnBack = $('btnBack');
-    btnBack.classList.toggle('hidden', step === 0 || step === 3);
+    btnBack.classList.toggle('hidden', step === 0);
 
     updateActionButton();
     syncUrl();
@@ -199,6 +199,27 @@
     updateActionButton();
   }
 
+  function splitItemLabel(item) {
+    if (!item.isSplit) return '';
+    const tag = item.autoAdded ? t('labels.autoSplit', 'auto-split') : t('labels.split', 'split');
+    if (item.splitId) {
+      const split = (state.splits || []).find((s) => s.id === item.splitId);
+      if (split) {
+        const names = split.participants
+          .map((pid) => state.payers.find((p) => p.id === pid)?.name || pid)
+          .join(', ');
+        return (
+          ' <span class="item-badge">' +
+          escapeHtml(tag) +
+          '</span> <span class="item-badge split-meta">' +
+          escapeHtml(formatMoney(split.fullCents) + ' ÷ ' + split.participants.length) +
+          '</span>'
+        );
+      }
+    }
+    return ' <span class="item-badge">' + escapeHtml(tag) + '</span>';
+  }
+
   function renderSummary() {
     const totals = SE.computeTotals(state);
     const box = $('reconcileBox');
@@ -224,20 +245,52 @@
     }
 
     $('labelEachOwes').textContent = t('labels.eachOwes', 'Each person owes');
-    $('summaryRows').innerHTML = totals.perPayer
-      .map(
-        (p) =>
-          '<div class="summary-row"><span>' +
-          escapeHtml(p.name) +
-          '</span><span class="amount">' +
-          formatMoney(p.cents) +
-          '</span></div>'
-      )
-      .join('');
+    $('hintSummaryEdit').textContent = t(
+      'steps.summary.tapNameToEdit',
+      'Tap a name to edit · expand to verify'
+    );
+
+    let html = '';
+    totals.perPayer.forEach((p, idx) => {
+      const payer = state.payers.find((x) => x.id === p.id);
+      const items = payer ? payer.items : [];
+      html += '<details class="payer-breakdown">';
+      html += '<summary class="summary-row">';
+      html +=
+        '<button type="button" class="payer-edit-btn" data-payer-idx="' +
+        idx +
+        '" title="' +
+        escapeHtml(t('steps.summary.editPayer', 'Edit items')) +
+        '">' +
+        escapeHtml(p.name) +
+        '</button>';
+      html += '<span class="amount">' + formatMoney(p.cents) + '</span>';
+      html += '</summary>';
+      html += '<ul class="breakdown-list">';
+      if (!items.length) {
+        html +=
+          '<li><span class="item-name">' +
+          escapeHtml(t('steps.summary.noItemsListed', 'No items')) +
+          '</span></li>';
+      } else {
+        items.forEach((item) => {
+          html +=
+            '<li class="' +
+            (item.autoAdded ? 'auto-split' : '') +
+            '"><span class="item-name">' +
+            escapeHtml(item.name) +
+            splitItemLabel(item) +
+            '</span><span class="item-price">' +
+            formatMoney(item.cents) +
+            '</span></li>';
+        });
+      }
+      html += '</ul></details>';
+    });
 
     const assignedLabel = t('labels.assigned', 'Assigned');
     const billLabel = t('labels.billTotal', 'BILL');
-    $('summaryRows').innerHTML +=
+    html +=
       '<div class="summary-row" style="margin-top:8px;border-top:1px dashed var(--green-border)">' +
       '<span>' +
       assignedLabel +
@@ -249,6 +302,50 @@
       '</span><span class="amount">' +
       formatMoney(totals.billTotalCents) +
       '</span></div>';
+
+    $('summaryRows').innerHTML = html;
+
+    $('summaryRows').querySelectorAll('.payer-edit-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        editPayer(parseInt(btn.dataset.payerIdx, 10));
+      });
+    });
+  }
+
+  function editPayer(index) {
+    if (index < 0 || index >= state.payers.length) return;
+    payerIndex = index;
+    $('inputItemName').value = '';
+    $('inputItemPrice').value = '';
+    setUiStep(2);
+    renderPayerStep();
+    $('inputItemName').focus();
+    GPSLogger.info('nav', 'edit payer', { index, name: state.payers[index].name });
+  }
+
+  function hasPendingItemDraft() {
+    return $('inputItemName').value.trim() !== '' || $('inputItemPrice').value.trim() !== '';
+  }
+
+  function validateBeforeLeavePayer() {
+    if (hasPendingItemDraft()) {
+      showError(t('errors.pendingItem', 'Tap ADD ITEM first'));
+      $('btnAddItem').focus();
+      return false;
+    }
+    const payer = state.payers[payerIndex];
+    if (!payer || payer.items.length < 1) {
+      showError(
+        t('errors.noItemsForPayer', '{name} needs at least one item').replace(
+          '{name}',
+          payer ? payer.name : '?'
+        )
+      );
+      return false;
+    }
+    return true;
   }
 
   function getSelectedSplitPartners() {
@@ -317,6 +414,8 @@
   }
 
   function nextPayerOrSummary() {
+    if (!validateBeforeLeavePayer()) return;
+
     const isLast = payerIndex >= state.payers.length - 1;
     if (isLast) {
       setUiStep(3);
@@ -336,12 +435,34 @@
   }
 
   function handleBack() {
+    if (uiStep === 3) {
+      payerIndex = Math.max(0, state.payers.length - 1);
+      $('inputItemName').value = '';
+      $('inputItemPrice').value = '';
+      setUiStep(2);
+      renderPayerStep();
+      return;
+    }
     if (uiStep === 2 && payerIndex > 0) {
+      if (hasPendingItemDraft()) {
+        showError(t('errors.pendingItem', 'Tap ADD ITEM first'));
+        return;
+      }
       payerIndex--;
       renderPayerStep();
-    } else if (uiStep === 2) {
+      return;
+    }
+    if (uiStep === 2) {
+      if (hasPendingItemDraft()) {
+        showError(t('errors.pendingItem', 'Tap ADD ITEM first'));
+        return;
+      }
+      $('inputNames').value = state.payers.map((p) => p.name).join(', ');
       setUiStep(1);
-    } else if (uiStep === 1) {
+      return;
+    }
+    if (uiStep === 1) {
+      $('inputBill').value = state.billTotalCents ? SE.fromCents(state.billTotalCents).toFixed(2) : '';
       setUiStep(0);
     }
   }
@@ -353,27 +474,34 @@
     $('inputNames').value = '';
     $('inputItemName').value = '';
     $('inputItemPrice').value = '';
-    history.replaceState(null, '', location.pathname);
+    history.replaceState(null, '', location.pathname + (currentLang !== 'en' ? '?lang=' + currentLang : ''));
     setUiStep(0);
     GPSLogger.info('session', 'restarted');
+  }
+
+  function getShareUrl() {
+    const LZ = typeof LZString !== 'undefined' ? LZString : null;
+    const token = GPSUrlState.encode(state, LZ);
+    return location.origin + GPSUrlState.buildUrl(location.pathname, currentLang, token);
   }
 
   function syncUrl() {
     if (!state.billTotalCents) return;
     try {
-      const encoded = SE.encodeStateUrl(state);
-      const url = location.pathname + '#s=' + encoded;
-      history.replaceState(null, '', url);
+      const LZ = typeof LZString !== 'undefined' ? LZString : null;
+      const token = GPSUrlState.encode(state, LZ);
+      const path = location.pathname;
+      history.replaceState(null, '', GPSUrlState.buildUrl(path, currentLang, token));
     } catch (e) {
       GPSLogger.warn('url', 'sync failed', e.message);
     }
   }
 
   function loadFromUrl() {
-    const hash = location.hash.slice(1);
-    const match = hash.match(/^s=(.+)$/);
-    if (!match) return false;
-    const decoded = SE.decodeStateUrl(match[1]);
+    const tokenRaw = GPSUrlState.parseHash(location.hash);
+    if (!tokenRaw) return false;
+    const LZ = typeof LZString !== 'undefined' ? LZString : null;
+    const decoded = GPSUrlState.decode(tokenRaw, LZ);
     if (!decoded || !decoded.payers) return false;
     state = decoded;
     updateBillPill();
@@ -386,10 +514,46 @@
 
   function copyShareLink() {
     syncUrl();
+    const url = getShareUrl();
     navigator.clipboard
-      .writeText(location.href)
+      .writeText(url)
       .then(() => showInfo(t('toasts.linkCopied', 'Link copied')))
       .catch(() => showError(t('errors.copyLink', 'Could not copy link')));
+  }
+
+  async function shareSession() {
+    syncUrl();
+    const url = getShareUrl();
+    const shareData = {
+      title: strings.app ? strings.app.title : 'Group Pay',
+      text: strings.app ? strings.app.subtitle : 'Split the bill',
+      url,
+    };
+
+    try {
+      if (navigator.share && typeof GPSPdf !== 'undefined') {
+        const blob = GPSPdf.toBlob(state, strings, SE);
+        const file = new File([blob], GPSPdf.pdfFilename(), { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ ...shareData, files: [file] });
+        } else {
+          await navigator.share(shareData);
+        }
+        showInfo(t('toasts.shared', 'Shared'));
+        return;
+      }
+      if (navigator.share) {
+        await navigator.share(shareData);
+        showInfo(t('toasts.shared', 'Shared'));
+        return;
+      }
+      copyShareLink();
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        showError(t('errors.shareFailed', 'Could not share'));
+        GPSLogger.warn('share', e.message);
+      }
+    }
   }
 
   function createPdf() {
@@ -453,6 +617,7 @@
     updateActionButton();
     if (uiStep === 2) renderPayerStep();
     if (uiStep === 3) renderSummary();
+    syncUrl();
   }
 
   function applyStrings() {
@@ -493,16 +658,17 @@
         $('titleSummary').textContent = s.steps.summary.title || $('titleSummary').textContent;
         if (s.steps.summary.backupHint) $('hintBackup').textContent = s.steps.summary.backupHint;
         if (s.steps.summary.copyLink) $('btnCopyLink').textContent = s.steps.summary.copyLink;
+        if (s.steps.summary.share) $('btnShare').textContent = s.steps.summary.share;
         if (s.steps.summary.createPdf) $('btnCreatePdf').textContent = s.steps.summary.createPdf;
         if (s.steps.summary.export) $('btnExport').textContent = s.steps.summary.export;
         if (s.steps.summary.import) $('btnImport').textContent = s.steps.summary.import;
       }
     }
-    if (s.app && s.app.howToUse) {
-      const ht = s.app.howToUse;
-      $('btnHowTo').textContent = ht.length <= 8 ? (ht.length <= 3 ? '?' : ht.slice(0, 3)) : '?';
-      $('btnHowTo').setAttribute('aria-label', ht);
-      $('btnHowTo').setAttribute('title', ht);
+    if (s.app) {
+      const guide = s.app.howToUseShort || s.app.howToUse || 'GUIDE';
+      $('btnHowTo').textContent = guide;
+      $('btnHowTo').setAttribute('aria-label', s.app.howToUse || guide);
+      $('btnHowTo').setAttribute('title', s.app.howToUse || guide);
     }
     if (s.lang) {
       $('langSelect').setAttribute('aria-label', s.lang.label || 'Language');
@@ -527,6 +693,7 @@
     $('btnBack').addEventListener('click', handleBack);
     $('btnAddItem').addEventListener('click', addCurrentItem);
     $('btnCopyLink').addEventListener('click', copyShareLink);
+    $('btnShare').addEventListener('click', shareSession);
     $('btnCreatePdf').addEventListener('click', createPdf);
     $('btnExport').addEventListener('click', exportBackup);
     $('btnImport').addEventListener('click', () => $('inputImport').click());
@@ -558,7 +725,9 @@
 
   async function init() {
     GPSLogger.info('boot', 'app start', { path: basePath() });
-    const savedLang = localStorage.getItem(LANG_KEY) || 'en';
+    const params = new URLSearchParams(location.search);
+    const urlLang = params.get('lang');
+    const savedLang = urlLang || localStorage.getItem(LANG_KEY) || 'en';
     $('langSelect').value = savedLang === 'es' ? 'es' : 'en';
     await loadStrings(savedLang);
     bindEvents();
@@ -572,6 +741,7 @@
     }
 
     if (typeof GPSTour !== 'undefined') {
+      GPSTour.setUiStepGetter(() => uiStep);
       GPSTour.init();
       GPSTour.setStrings(strings);
       $('btnHowTo').addEventListener('click', () => GPSTour.start());

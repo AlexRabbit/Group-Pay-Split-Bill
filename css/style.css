@@ -349,6 +349,12 @@ textarea { min-height: 100px; resize: vertical; }
   border-radius: 2px;
 }
 
+.item-badge.split-meta {
+  border-color: var(--text-dim);
+  color: var(--text-dim);
+  font-size: 0.6rem;
+}
+
 .btn-remove {
   background: none;
   border: none;
@@ -522,6 +528,105 @@ textarea { min-height: 100px; resize: vertical; }
   min-height: 44px;
   font-size: 0.75rem;
   padding: 10px 8px;
+}
+
+.summary-actions .summary-import-full {
+  grid-column: 1 / -1;
+}
+
+.summary-edit-hint {
+  margin: -4px 0 10px;
+  font-size: 0.72rem;
+}
+
+.payer-breakdown {
+  border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.payer-breakdown:last-child {
+  border-bottom: none;
+}
+
+.payer-breakdown > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.payer-breakdown > summary::-webkit-details-marker {
+  display: none;
+}
+
+.payer-breakdown > summary::after {
+  content: '▸';
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.payer-breakdown[open] > summary::after {
+  transform: rotate(90deg);
+}
+
+.payer-edit-btn {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  color: var(--green);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.payer-edit-btn:hover, .payer-edit-btn:focus-visible {
+  text-shadow: 0 0 8px var(--green-glow);
+  outline: none;
+}
+
+.breakdown-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0 0 8px 12px;
+  border-left: 2px solid rgba(0, 255, 65, 0.15);
+}
+
+.breakdown-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 0.8rem;
+  border-bottom: 1px solid rgba(0, 255, 65, 0.06);
+}
+
+.breakdown-list li.auto-split {
+  border-left: 2px solid var(--amber);
+  padding-left: 8px;
+  margin-left: -2px;
+}
+
+.breakdown-list .item-name {
+  flex: 1;
+  color: var(--text);
+}
+
+.btn-howto {
+  min-width: auto;
+  padding: 6px 9px;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
 }
 
 .hidden { display: none !important; }

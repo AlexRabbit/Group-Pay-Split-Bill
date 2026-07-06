@@ -3,6 +3,7 @@
     "title": "Group Pay",
     "subtitle": "Divide la cuenta. Sin matemáticas en la mesa.",
     "howToUse": "Cómo usar",
+    "howToUseShort": "GUÍA",
     "logoBefore": "Group Pay por",
     "logoAuthor": "AlexRabbit",
     "logoUrl": "https://github.com/AlexRabbit/Group-Pay-Split-Bill"
@@ -27,7 +28,7 @@
     },
     "items": {
       "title": "> REGISTRO_PEDIDO",
-      "hint": "Agrega lo que pidió esta persona.",
+      "hint": "Agrega lo que pidió esta persona y toca AGREGAR antes de continuar.",
       "itemNamePlaceholder": "nombre del platillo",
       "itemPricePlaceholder": "0.00",
       "addItem": "AGREGAR",
@@ -40,10 +41,14 @@
       "unbalanced": "Hay diferencia — revisa los artículos.",
       "restart": "NUEVA CUENTA",
       "copyLink": "Copiar enlace",
+      "share": "Compartir",
       "createPdf": "Crear PDF",
       "export": "EXPORTAR",
       "import": "IMPORTAR",
-      "backupHint": "Respaldo / restaurar sesión"
+      "backupHint": "Respaldo / restaurar sesión",
+      "tapNameToEdit": "Toca un nombre para editar · expande para verificar",
+      "editPayer": "Editar artículos",
+      "noItemsListed": "Sin artículos"
     }
   },
   "labels": {
@@ -56,7 +61,8 @@
     "unassigned": "sin asignar",
     "overAssigned": "sobre-asignado",
     "back": "ATRÁS",
-    "remove": "Eliminar"
+    "remove": "Eliminar",
+    "expand": "Ver artículos"
   },
   "errors": {
     "itemName": "Ingresa el nombre del artículo",
@@ -64,17 +70,24 @@
     "billTotal": "Ingresa un total de cuenta válido",
     "names": "Agrega al menos un nombre",
     "copyLink": "No se pudo copiar el enlace",
-    "pdfFailed": "No se pudo crear el PDF"
+    "pdfFailed": "No se pudo crear el PDF",
+    "pendingItem": "Tienes un artículo escrito — toca AGREGAR primero",
+    "noItemsForPayer": "{name} necesita al menos un artículo antes de continuar",
+    "shareFailed": "No se pudo compartir — prueba Copiar enlace"
   },
   "toasts": {
-    "linkCopied": "Enlace copiado — guárdalo en favoritos"
+    "linkCopied": "Enlace copiado — guárdalo en favoritos",
+    "shared": "Compartido correctamente"
   },
   "pdf": {
     "title": "GROUP PAY — DIVISIÓN DE CUENTA",
     "generated": "Generado",
     "billTotal": "TOTAL CUENTA",
+    "payersCount": "Personas",
     "payerSection": "COMENSAL",
     "subtotal": "Subtotal",
+    "splitsSection": "REGISTRO COMPARTIDOS",
+    "noItems": "sin artículos",
     "reconcile": "CONCILIAR",
     "assigned": "Asignado",
     "difference": "Diferencia",
@@ -89,39 +102,67 @@
     "steps": [
       {
         "title": "① Total de la cuenta",
-        "description": "Escribe el monto total del recibo. Se queda fijo arriba."
+        "description": "Escribe el monto total del recibo."
       },
       {
-        "title": "② Confirmar",
-        "description": "Confirma el total y pasa al siguiente paso."
+        "title": "② Confirmar / Atrás",
+        "description": "CONFIRMAR avanza. ATRÁS aparece después si necesitas corregir algo."
       },
       {
         "title": "③ ¿Quién comió?",
-        "description": "Nombres separados por comas. Todos los que comparten la cuenta."
+        "description": "Nombres separados por comas. Todos los de la cuenta."
       },
       {
-        "title": "④ Uno por uno",
-        "description": "Cada persona registra sus platillos. El total aparece a la derecha."
+        "title": "④ Persona actual",
+        "description": "Un comensal a la vez. Su total va a la derecha."
       },
       {
         "title": "⑤ Agregar artículos",
-        "description": "Nombre + precio. Toca AGREGAR o Enter en el precio."
+        "description": "Nombre + precio, luego toca AGREGAR. No omitas AGREGAR o perderás el dato."
       },
       {
         "title": "⑥ Dividir comida",
-        "description": "Marca con quién compartes. Ingresa el precio COMPLETO — lo dividimos automáticamente."
+        "description": "Marca con quién compartes. Ingresa el precio COMPLETO — lo dividimos solos."
       },
       {
         "title": "⑦ Conciliar",
-        "description": "Al final, la suma debe igualar la cuenta. Verde = bien. Ámbar = revisar."
+        "description": "La suma debe igualar la cuenta. Verde = bien. Ámbar = revisar."
       },
       {
         "title": "⑧ Copiar enlace",
-        "description": "Copia la URL de la sesión — guárdala en favoritos para restaurar todo."
+        "description": "Enlace corto comprimido con tu sesión. Incluye ?lang=es si no es inglés."
       },
       {
         "title": "⑨ PDF y respaldo",
-        "description": "Crea un PDF formateado o exporta JSON para compartir."
+        "description": "PDF detallado con etiquetas split, o exportar JSON."
+      },
+      {
+        "title": "Idioma",
+        "description": "EN / ES. Se guarda en la URL como ?lang=es para enlaces en español."
+      },
+      {
+        "title": "Esta guía",
+        "description": "Tips de la pantalla actual — nunca se ejecuta sola."
+      },
+      {
+        "title": "Regresar",
+        "description": "ATRÁS te deja corregir total, nombres o artículos anteriores."
+      },
+      {
+        "title": "Artículos agregados",
+        "description": "Lo listado aquí ya está guardado. Elimina con × si hace falta."
+      },
+      {
+        "title": "Siguiente / Finalizar",
+        "description": "Requiere al menos un artículo por persona. No avanza si omitiste AGREGAR."
+      },
+      {
+        "title": "Verificar desglose",
+        "description": "Expande cada persona para ver todo. Toca su nombre para editar."
+      },
+      {
+        "title": "Compartir",
+        "description": "En móvil: hoja nativa de compartir con enlace corto y PDF juntos."
       }
     ]
   }

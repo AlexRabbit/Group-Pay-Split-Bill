@@ -69,15 +69,17 @@
         <div class="reconcile" id="reconcileBox"></div>
         <div class="summary-card">
           <h3 id="labelEachOwes">Each person owes</h3>
+          <p class="step-hint summary-edit-hint" id="hintSummaryEdit"></p>
           <div id="summaryRows"></div>
         </div>
         <div class="terminal-box summary-tools" style="margin-top:12px">
           <p class="step-hint" id="hintBackup" style="margin-bottom:8px">Backup / restore session</p>
           <div class="summary-actions">
             <button type="button" class="btn-secondary" id="btnCopyLink">Copy Link</button>
+            <button type="button" class="btn-secondary" id="btnShare">Share</button>
             <button type="button" class="btn-secondary" id="btnCreatePdf">Create a PDF</button>
             <button type="button" class="btn-secondary" id="btnExport">EXPORT</button>
-            <button type="button" class="btn-secondary" id="btnImport">IMPORT</button>
+            <button type="button" class="btn-secondary summary-import-full" id="btnImport">IMPORT</button>
           </div>
           <input type="file" id="inputImport" accept=".json,application/json" class="hidden">
         </div>
@@ -96,6 +98,8 @@
   <div class="info-toast hidden" id="infoToast" role="status"></div>
 
   <script src="js/split-engine.js"></script>
+  <script src="js/url-state.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
   <script src="js/logger.js"></script>
   <script src="js/pdf.js"></script>
   <script src="js/app.js"></script>
