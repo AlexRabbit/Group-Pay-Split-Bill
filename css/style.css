@@ -533,6 +533,10 @@ textarea { min-height: 100px; resize: vertical; }
 .summary-edit-hint {
   margin: -4px 0 10px;
   font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--amber);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .payer-row {
