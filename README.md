@@ -1,43 +1,18 @@
-# Group Pay — Split the Bill
+If this helped you, consider starring the repo ⭐
+
+# SPLIT BILL - Group Pay
 
 <p align="center">
   <strong>No math at the table.</strong><br>
-  Mobile-first bill splitter · hacker terminal UI · zero backend
+  Mobile-first bill splitter
 </p>
 
 <p align="center">
-  <a href="https://alexrabbit.github.io/Group-Pay-Split-Bill/">Live demo</a> ·
-  <a href="https://github.com/AlexRabbit/Group-Pay-Split-Bill">GitHub</a>
+  <a href="https://alexrabbit.github.io/Group-Pay-Split-Bill/">▶USE IT</a> 
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/▶_start-run.bat-00ff41?style=for-the-badge&labelColor=050805" alt="Start with run.bat">
-  <img src="https://img.shields.io/badge/mobile-first-yes-00ff41?style=flat-square&labelColor=050805" alt="Mobile first">
-  <img src="https://img.shields.io/badge/backend-none-static-00ff41?style=flat-square&labelColor=050805" alt="Static">
-  <img src="https://img.shields.io/badge/lang-EN_|_ES-00ff41?style=flat-square&labelColor=050805" alt="i18n">
-</p>
+<img width="799" height="1290" alt="image" src="https://github.com/user-attachments/assets/f7c4d182-3f6f-4bba-a26f-9dfbddaf2499" />
 
----
-
-## ▶ START HERE — Windows (double-click)
-
-> **Before anything else:** double-click **`run.bat`** in the project folder.
-
-```
-Group-Pay-Split-Bill/
-└── run.bat   ← double-click this
-```
-
-**What `run.bat` does:**
-
-1. Checks if Node.js is installed
-2. Runs the bill-split math tests automatically
-3. Starts a local server at **http://localhost:8080**
-4. Keeps the window open so you can see errors
-
-If Node.js is missing, it opens `index.html` directly (some features need the local server).
-
-**No install. No npm. No build step.** The web app is plain HTML/CSS/JS.
 
 ---
 
@@ -53,7 +28,7 @@ The check lands. Everyone ordered different things. Someone shared the fish stic
 
 ```
  STEP 1   Enter bill total          $500.00   (stays pinned at top)
- STEP 2   Enter names                Alex, Carlos, Cesar, Manuel
+ STEP 2   Enter names                Alex, Dakota, Carlos, Etc..
  STEP 3   Each person adds items:
             Alex    lemonade           $45
                     cocktail          $130
@@ -65,18 +40,6 @@ The check lands. Everyone ordered different things. Someone shared the fish stic
 ---
 
 ## Full tutorial
-
-### Step 0 — Open the app
-
-| Method | How |
-|--------|-----|
-| **Windows (recommended)** | Double-click **`run.bat`** |
-| **Manual server** | `npx serve .` then open `http://localhost:3000` |
-| **GitHub Pages** | Visit [alexrabbit.github.io/Group-Pay-Split-Bill](https://alexrabbit.github.io/Group-Pay-Split-Bill/) |
-
-> **Tip:** Use a local server (`run.bat` or `npx serve`) so language files and QR load correctly. Opening `index.html` directly may block some features in certain browsers.
-
----
 
 ### Step 1 — Bill total
 
@@ -100,15 +63,9 @@ For each diner:
 1. Type **item name** + **price**
 2. Press **ADD ITEM** ← required; the app won't let you skip this
 3. Repeat for every dish they ordered
-4. Press **NEXT PERSON** (or **VIEW RESULTS** on the last person)
+4. Press **NEXT PERSON** (or **VIEW RESULTS**)
 
-**Validation rules:**
-
-- You must tap **ADD ITEM** before advancing (unfinished fields block you)
-- Each person needs **at least one item** with a price **above $0**
-- Phone vibrates on errors (mobile)
-
-**BACK** works on every step — fix bill total, names, or previous people's items anytime.
+**Validation rules**
 
 ---
 
@@ -116,7 +73,7 @@ For each diner:
 
 Sharing fish sticks? Do this:
 
-1. Enter the **full price** (`140`, not half)
+1. Enter the **full price** (not half)
 2. Check **Split with** → select who shares (e.g. Manuel)
 3. Tap **ADD ITEM**
 
@@ -154,98 +111,12 @@ The orange hint line explains: **TAP NAME TO EDIT · TAP AMOUNT TO SEE ITEMS**
 
 | Feature | Details |
 |---------|---------|
-| **Hacker UI** | Dark mode, terminal green `#00ff41`, monospace fonts, scanlines |
 | **Cent-precision math** | All amounts stored in cents — no `$0.01` drift |
-| **Short session URLs** | Minified JSON + LZ-String compression (`#p=b:...`) |
-| **`?lang=es`** | Spanish shareable links — language in URL |
 | **PDF export** | Full breakdown with split tags + session QR |
 | **QR code** | Scan to restore session at the table |
-| **How to Use** | Context-aware guided tour (GUIDE button — never auto-runs) |
 | **i18n** | English + Spanish (`i18n/en`, `i18n/es`) |
 | **Offline-ready** | No server after load — pure static files |
 | **Privacy** | Data stays in your browser / URL — nothing sent to us |
-
----
-
-## Language
-
-Use the **EN / ES** selector in the header. Choice is saved and added to shared links:
-
-```
-https://alexrabbit.github.io/Group-Pay-Split-Bill/?lang=es#p=b:...
-```
-
-To add a language: copy `i18n/en/strings.json` → `i18n/<code>/strings.json` and open a PR.
-
----
-
-## Deploy to GitHub Pages
-
-You host it — we don't deploy for you.
-
-1. Push this repo to GitHub
-2. **Settings → Pages**
-3. **Source:** branch `main`, folder `/ (root)`
-4. Live at: `https://<username>.github.io/Group-Pay-Split-Bill/`
-
-Included: `.nojekyll` (Jekyll bypass) · auto base-path detection for `/Group-Pay-Split-Bill/`
-
-**Never commit:** `.env`, tokens, `node_modules/`, `__pycache__/`, log files.
-
----
-
-## Project structure
-
-```
-Group-Pay-Split-Bill/
-├── run.bat                 ← ▶ DOUBLE-CLICK FIRST (Windows)
-├── index.html              # App entry
-├── .nojekyll               # GitHub Pages
-├── .gitignore
-├── css/
-│   └── style.css           # Hacker terminal theme
-├── js/
-│   ├── split-engine.js     # Pure bill math (testable)
-│   ├── url-state.js        # Compressed session URLs
-│   ├── app.js              # UI flow + validation
-│   ├── pdf.js              # PDF export
-│   ├── qr.js               # QR generation
-│   ├── tour.js             # Guided tour (Driver.js)
-│   └── logger.js           # Client debug logs (localStorage)
-├── i18n/
-│   ├── en/strings.json
-│   └── es/strings.json
-└── tests/
-    └── run-tests.js        # Run: node tests/run-tests.js
-```
-
-**17 files. Zero build step. Works on GitHub Pages.**
-
----
-
-## Run tests manually
-
-```bash
-node tests/run-tests.js
-```
-
-`run.bat` runs this automatically before starting the server.
-
----
-
-## Session URL format
-
-Sessions are encoded in the URL hash — bookmark or share to restore:
-
-```
-https://yoursite/Group-Pay-Split-Bill/?lang=es#p=b:H4sI...
-```
-
-| Part | Meaning |
-|------|---------|
-| `?lang=es` | Spanish UI (omitted for English) |
-| `#p=b:` | Compressed payload (LZ-String Base64) |
-| Legacy `#s:` / `#d:` | Still supported |
 
 ---
 
@@ -273,16 +144,6 @@ https://yoursite/Group-Pay-Split-Bill/?lang=es#p=b:H4sI...
 | PDF | [jsPDF](https://github.com/parallax/jsPDF) |
 | QR | [qrcodejs](https://github.com/davidshimjs/qrcodejs) |
 | Hosting | GitHub Pages (static) |
-
----
-
-## Contributing
-
-1. Fork the repo
-2. `node tests/run-tests.js` — all tests must pass
-3. Match the hacker terminal aesthetic
-4. Add i18n strings for any new UI text (EN + ES)
-5. Open a PR
 
 ---
 
