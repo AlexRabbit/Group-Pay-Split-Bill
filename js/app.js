@@ -608,7 +608,7 @@
     try {
       syncUrl();
       const url = getShareUrl();
-      await GPSQr.render($('qrCanvas'), url);
+      await GPSQr.render($('qrHost'), url);
       panel.classList.remove('hidden');
       btn.textContent = t('steps.summary.hideQr', 'Hide QR');
       panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -616,34 +616,6 @@
       showError(t('errors.qrFailed', 'Could not generate QR'));
       GPSLogger.error('qr', e.message);
     }
-  }
-
-  function exportBackup() {
-    const data = SE.exportBackup(state);
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'group-pay-backup-' + Date.now() + '.json';
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
-
-  function importBackupFile(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        state = SE.importBackup(reader.result);
-        updateBillPill();
-        payerIndex = state.payers.length - 1;
-        setUiStep(3);
-        renderSummary();
-        syncUrl();
-        GPSLogger.info('import', 'backup loaded');
-      } catch (e) {
-        showError(e.message);
-      }
-    };
-    reader.readAsText(file);
   }
 
   async function loadStrings(lang) {
@@ -707,12 +679,9 @@
       }
       if (s.steps.summary) {
         $('titleSummary').textContent = s.steps.summary.title || $('titleSummary').textContent;
-        if (s.steps.summary.backupHint) $('hintBackup').textContent = s.steps.summary.backupHint;
         if (s.steps.summary.copyLink) $('btnCopyLink').textContent = s.steps.summary.copyLink;
         if (s.steps.summary.share) $('btnShare').textContent = s.steps.summary.share;
         if (s.steps.summary.createPdf) $('btnCreatePdf').textContent = s.steps.summary.createPdf;
-        if (s.steps.summary.export) $('btnExport').textContent = s.steps.summary.export;
-        if (s.steps.summary.import) $('btnImport').textContent = s.steps.summary.import;
         if (s.steps.summary.showQr && !$('qrPanel').classList.contains('hidden')) {
           $('btnShowQr').textContent = s.steps.summary.hideQr || 'Hide QR';
         } else if (s.steps.summary.showQr) {
@@ -753,14 +722,7 @@
     $('btnShare').addEventListener('click', shareSession);
     $('btnShowQr').addEventListener('click', toggleQrPanel);
     $('btnCreatePdf').addEventListener('click', createPdf);
-    $('btnExport').addEventListener('click', exportBackup);
-    $('btnImport').addEventListener('click', () => $('inputImport').click());
     $('langSelect').addEventListener('change', (e) => setLanguage(e.target.value));
-    $('inputImport').addEventListener('change', (e) => {
-      const f = e.target.files[0];
-      if (f) importBackupFile(f);
-      e.target.value = '';
-    });
 
     $('inputBill').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') confirmBill();

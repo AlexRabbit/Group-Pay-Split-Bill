@@ -530,10 +530,6 @@ textarea { min-height: 100px; resize: vertical; }
   padding: 10px 8px;
 }
 
-.summary-actions .summary-import-full {
-  grid-column: 1 / -1;
-}
-
 .summary-edit-hint {
   margin: -4px 0 10px;
   font-size: 0.72rem;
@@ -629,13 +625,18 @@ textarea { min-height: 100px; resize: vertical; }
   text-align: center;
 }
 
-.qr-panel canvas {
-  max-width: 220px;
-  width: 100%;
-  height: auto;
+.qr-host {
+  display: inline-block;
+  padding: 8px;
   border: 1px solid var(--green-border);
   border-radius: var(--radius);
   background: var(--bg);
+}
+
+.qr-host img {
+  display: block;
+  max-width: 220px;
+  height: auto;
 }
 
 .qr-toggle-btn {

@@ -247,17 +247,10 @@
   }
 
   async function qrDataUrlFor(url) {
-    if (typeof QRCode === 'undefined') return null;
-    try {
-      return await QRCode.toDataURL(url, {
-        width: 256,
-        margin: 1,
-        color: { dark: '#00ff41', light: '#050805' },
-        errorCorrectionLevel: 'M',
-      });
-    } catch {
-      return null;
+    if (typeof GPSQr !== 'undefined' && GPSQr.toDataUrl) {
+      return GPSQr.toDataUrl(url);
     }
+    return null;
   }
 
   async function toBlob(state, strings, SplitEngine, shareUrl) {

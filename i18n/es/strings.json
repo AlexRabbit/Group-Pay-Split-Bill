@@ -168,6 +168,10 @@
       {
         "title": "Compartir",
         "description": "En móvil: hoja nativa de compartir con enlace corto y PDF juntos."
+      },
+      {
+        "title": "Mostrar QR",
+        "description": "Muestra un código QR escaneable de esta sesión — ideal en la mesa."
       }
     ]
   }

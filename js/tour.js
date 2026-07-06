@@ -37,7 +37,7 @@
       { el: '#btnCopyLink', side: 'top', key: 7 },
       { el: '#btnShare', side: 'top', key: 16 },
       { el: '#btnCreatePdf', side: 'top', key: 8 },
-      { el: '#btnExport', side: 'top', key: 8 },
+      { el: '#btnShowQr', side: 'top', key: 17 },
     ],
   };
 

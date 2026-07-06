@@ -138,8 +138,8 @@
         "description": "Short compressed link with your session. Includes ?lang= if not English."
       },
       {
-        "title": "⑨ PDF & backup",
-        "description": "Full itemized PDF with split tags, or export JSON."
+        "title": "⑨ PDF",
+        "description": "Full itemized PDF with split tags and session QR."
       },
       {
         "title": "Language",
@@ -168,6 +168,10 @@
       {
         "title": "Share",
         "description": "Native share sheet on mobile — sends the short link and PDF together."
+      },
+      {
+        "title": "Show QR",
+        "description": "Display a scannable QR code for this session — great at the table."
       }
     ]
   }
